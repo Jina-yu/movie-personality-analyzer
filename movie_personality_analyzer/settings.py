@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'movies.apps.MoviesConfig',
+    'rest_framework',
+    'django_filters',
 
     #new apps
 
@@ -51,11 +53,15 @@ INSTALLED_APPS = [
     'users',
     'api',
 
+    'corsheaders'
+
+
     #later add package
     #'rest_framework',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -142,3 +148,49 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 TMDB_API_KEY = os.getenv('TMDB_API_KEY')
 TMDB_BASE_URL = os.getenv('TMDB_BASE_URL', 'https://api.themoviedb.org/3')
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',  # 기본 인증
+        'rest_framework.authentication.BasicAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',  # HTML 인터페이스
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20
+}
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # React 개발 서버
+    #"http://127.0.0.1:3000",
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+# 검색 결과에 따른 추가 설정
+CORS_ALLOW_ALL_ORIGINS = False  # 보안을 위해 False 유지
+
+# SessionAuthentication을 위한 CSRF 설정
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    #"http://127.0.0.1:3000",
+]
+
+
+SESSION_COOKIE_SECURE = False   # HTTP에서도 쿠키 전송 (개발환경용)
+SESSION_COOKIE_HTTPONLY = False # JavaScript에서 쿠키 접근 허용
+SESSION_COOKIE_AGE = 86400      # 세션 만료 시간 (24시간)
+CSRF_USE_SESSIONS = False
+
+
+SESSION_COOKIE_DOMAIN = None  # 자동으로 현재 도메인 사용
+CSRF_COOKIE_NAME = 'csrftoken'
+SESSION_COOKIE_SAMESITE = 'Lax'  # 검색 결과[3] 권장 설정
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # DB 기반 세션
+SESSION_SAVE_EVERY_REQUEST = True  # 요청마다 세션 갱신

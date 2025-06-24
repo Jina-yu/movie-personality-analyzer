@@ -194,3 +194,15 @@ CSRF_COOKIE_NAME = 'csrftoken'
 SESSION_COOKIE_SAMESITE = 'Lax'  # 검색 결과[3] 권장 설정
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # DB 기반 세션
 SESSION_SAVE_EVERY_REQUEST = True  # 요청마다 세션 갱신
+
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+        'TIMEOUT': 900,  # 15분
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000,
+        }
+    }
+}

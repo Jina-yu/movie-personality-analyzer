@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import User
+from typing import Any, Optional, List, Dict
 
 
 class Genre(models.Model):
@@ -189,7 +190,7 @@ class UserMoviePreference(models.Model):
         return weighted_personality
 
 
-# Django Admin 설정을 위한 추가 메서드들
+# Django Admin을 위한 Custom Manager (선택사항)
 class MovieQuerySet(models.QuerySet):
     def with_high_rating(self, min_rating=7.0):
         return self.filter(vote_average__gte=min_rating)
@@ -200,20 +201,28 @@ class MovieQuerySet(models.QuerySet):
     def popular(self):
         return self.filter(popularity__gte=10.0)
 
+    def recent(self):
+        from datetime import datetime
+        current_year = datetime.now().year
+        return self.filter(release_date__year__gte=current_year - 2)
+
 
 class MovieManager(models.Manager):
     def get_queryset(self):
         return MovieQuerySet(self.model, using=self._db)
 
-    # def with_high_rating(self, min_rating=7.0):
-    #     return self.get_queryset().with_high_rating(min_rating)
-    #
-    # def by_genre(self, genre_name):
-    #     return self.get_queryset().by_genre(genre_name)
-    #
-    # def popular(self):
-    #     return self.get_queryset().popular()
+    def with_high_rating(self, min_rating=7.0):
+        return self.get_queryset().with_high_rating(min_rating)
+
+    def by_genre(self, genre_name):
+        return self.get_queryset().by_genre(genre_name)
+
+    def popular(self):
+        return self.get_queryset().popular()
+
+    def recent(self):
+        return self.get_queryset().recent()
 
 
-# Movie 모델에 Manager 추가
+# Movie 모델에 Custom Manager 추가
 Movie.add_to_class('objects', MovieManager())

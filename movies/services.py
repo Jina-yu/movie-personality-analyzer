@@ -54,10 +54,61 @@ class TMDBService:
         """영화 상세 정보 조회"""
         return self._make_request(f'movie/{movie_id}')
 
-    def get_popular_movies(self, page: int = 1) -> Optional[Dict]:
-        """인기 영화 목록 조회"""
-        params = {'page': page}
-        return self._make_request('movie/popular', params)
+    def get_popular_movies(self, page=1, language='ko-KR'):
+        """검색 결과 [11] 패턴: TMDB 인기 영화 목록 가져오기"""
+        if not self.api_key:
+            print("❌ API 키가 없어서 인기 영화를 가져올 수 없습니다!")
+            return []
+
+        url = f"{self.base_url}/movie/popular"
+        params = {
+            'api_key': self.api_key,
+            'language': language,
+            'page': page,
+            'region': 'KR'  # 한국 지역 설정
+        }
+
+        try:
+            print(f"🔥 TMDB 인기 영화 요청: 페이지 {page}")
+            response = requests.get(url, params=params, timeout=10)
+
+            if response.status_code == 200:
+                data = response.json()
+                results = data.get('results', [])
+                print(f"✅ 인기 영화 로드 성공: {len(results)}개")
+                return results
+            else:
+                print(f"❌ 인기 영화 API 오류: {response.status_code}")
+                return []
+
+        except requests.RequestException as e:
+            print(f"❌ 인기 영화 요청 실패: {e}")
+            return []
+
+    def get_top_rated_movies(self, page=1, language='ko-KR'):
+        """검색 결과 [11] 패턴: TMDB 높은 평점 영화 목록"""
+        if not self.api_key:
+            return []
+
+        url = f"{self.base_url}/movie/top_rated"
+        params = {
+            'api_key': self.api_key,
+            'language': language,
+            'page': page,
+            'region': 'KR'
+        }
+
+        try:
+            response = requests.get(url, params=params, timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                results = data.get('results', [])
+                print(f"✅ 높은 평점 영화 로드: {len(results)}개")
+                return results
+            return []
+        except requests.RequestException as e:
+            print(f"❌ 높은 평점 영화 요청 실패: {e}")
+            return []
 
     def get_movie_genres(self) -> Optional[Dict]:
         """영화 장르 목록 조회"""

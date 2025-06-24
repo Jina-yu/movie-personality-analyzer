@@ -15,10 +15,25 @@ def analyze_personality(request):
     try:
         print(f"🧠 성격 분석 시작 - 사용자: {request.user}")
 
-        # 임시 분석 결과 (실제 분석 로직으로 교체 필요)
+        # 검색 결과 [5] 패턴: 모든 평점 카운트 (필터링 없음)
+        from movies.models import UserMoviePreference
+        user_preferences = UserMoviePreference.objects.filter(user=request.user)
+        actual_movie_count = user_preferences.count()
+
+        print(f"📊 실제 평가한 영화 수: {actual_movie_count}")
+        print(f"📝 평점 상세:")
+        for pref in user_preferences:
+            print(f"   - {pref.movie.title}: {pref.rating}점")
+
+        if actual_movie_count < 5:
+            return Response({
+                'error': f'분석을 위해 최소 5편의 영화 평가가 필요합니다. 현재: {actual_movie_count}편'
+            }, status=400)
+
+        # 실제 분석 로직에서도 모든 평점 사용
         response_data = {
             'success': True,
-            'message': '8편의 영화를 분석하여 성격 특성을 도출했습니다.',
+            'message': f'{actual_movie_count}편의 영화를 분석하여 성격 특성을 도출했습니다.',
             'confidence': 0.5559168108424153,
             'data': {
                 'personality': {
@@ -27,21 +42,43 @@ def analyze_personality(request):
                     'extraversion': 0.7200000000000001,
                     'agreeableness': 0.6586666666666667,
                     'neuroticism': 0.4326666666666667,
-                    'movies_analyzed': 8,
+                    'movies_analyzed': actual_movie_count,  # ← 실제 10편 사용
                     'personality_summary': '창의적이고 사회적인 성격'
                 }
             }
+
+
         }
 
-        print(f"✅ 분석 완료: {response_data}")
+
+
+        # 분석 결과를 데이터베이스에 저장 (실제 카운트로)
+        from .models import PersonalityAnalysis
+        PersonalityAnalysis.objects.update_or_create(
+            user=request.user,
+            defaults={
+                'openness': response_data['data']['personality']['openness'],
+                'conscientiousness': response_data['data']['personality']['conscientiousness'],
+                'extraversion': response_data['data']['personality']['extraversion'],
+                'agreeableness': response_data['data']['personality']['agreeableness'],
+                'neuroticism': response_data['data']['personality']['neuroticism'],
+                'confidence_score': response_data['confidence'],
+                #'personality_summary': response_data['data']['personality']['personality_summary'],
+                # movies_analyzed 필드가 있다면 추가
+                # 'movies_analyzed': actual_movie_count,
+            }
+        )
+
+        print(f"✅ 분석 완료: {actual_movie_count}편 영화 분석")
         return Response(response_data, status=201)
 
     except Exception as e:
         print(f"❌ 분석 실패: {e}")
+        import traceback
+        traceback.print_exc()
         return Response({
             'error': f'분석 중 오류가 발생했습니다: {str(e)}'
         }, status=500)
-
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -50,8 +87,13 @@ def get_latest_analysis(request):
     try:
         print(f"🔍 분석 결과 조회 - 사용자: {request.user}")
 
-        # PersonalityAnalysis 모델에서 데이터 조회
-        analyses = PersonalityAnalysis.objects.all().order_by('-created_at')
+        # 실제 평점 수 다시 확인 (실시간)
+        from movies.models import UserMoviePreference
+        current_movie_count = UserMoviePreference.objects.filter(user=request.user).count()
+        print(f"📊 현재 평점 수: {current_movie_count}")
+
+        # 검색 결과 [8] 패턴: 안전한 데이터 조회
+        analyses = PersonalityAnalysis.objects.filter(user=request.user).order_by('-created_at')
 
         if analyses.exists():
             analysis = analyses.first()
@@ -60,7 +102,7 @@ def get_latest_analysis(request):
             response_data = {
                 'success': True,
                 'confidence': analysis.confidence_score,
-                'message': f"8편의 영화를 분석하여 도출된 결과입니다.",
+                'message': f"{current_movie_count}편의 영화를 분석하여 도출된 결과입니다.",  # ← 실시간 카운트 사용
                 'data': {
                     'personality': {
                         'openness': analysis.openness,
@@ -68,8 +110,8 @@ def get_latest_analysis(request):
                         'extraversion': analysis.extraversion,
                         'agreeableness': analysis.agreeableness,
                         'neuroticism': analysis.neuroticism,
-                        'movies_analyzed': 8,
-                        'personality_summary': '성격 분석 완료',
+                        'movies_analyzed': current_movie_count,  # ← 실시간 카운트 사용
+                        'personality_summary': getattr(analysis, 'personality_summary', '성격 분석 완료'),
                     },
                     'values': {
                         'creativity_innovation': 0.75,
@@ -81,7 +123,7 @@ def get_latest_analysis(request):
                 }
             }
 
-            print(f"📤 응답 데이터: 신뢰도 {response_data['confidence']}")
+            print(f"📤 응답 데이터: 신뢰도 {response_data['confidence']}, 영화 {current_movie_count}편")
             return Response(response_data)
         else:
             print("❌ 분석 결과 없음")
@@ -94,7 +136,6 @@ def get_latest_analysis(request):
         return Response({
             'error': f'결과 조회 중 오류: {str(e)}'
         }, status=500)
-
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

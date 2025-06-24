@@ -72,6 +72,9 @@ class PersonalityAnalysis(models.Model):
         return f"주요 특성: {dominant_trait} ({traits[dominant_trait]:.2f})"
 
 
+    
+
+
 class ValueAnalysis(models.Model):
     """사용자의 가치관 분석 결과"""
 

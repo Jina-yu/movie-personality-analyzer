@@ -1,0 +1,52 @@
+:root {
+  /* 참고한 UI 스타일 기반 색상 팔레트 */
+  --color-bg-primary: #000000;          /* 메인 배경 (완전한 블랙) */
+  --color-bg-secondary: #111111;        /* 서브 배경 */
+  --color-bg-card: #1a1a1a;            /* 카드 배경 (다크 그레이) */
+
+  /* 텍스트 색상 */
+  --color-text-primary: #ffffff;        /* 메인 텍스트 (화이트) */
+  --color-text-secondary: #a0a0a0;      /* 보조 텍스트 (그레이) */
+  --color-text-muted: #666666;          /* 흐린 텍스트 */
+
+  /* 액센트 색상 (넷플릭스 스타일) */
+  --color-accent-primary: #e50914;      /* 넷플릭스 레드 */
+  --color-accent-secondary: #f5c518;    /* 골드 */
+  --color-success: #46d369;             /* 그린 */
+
+  /* 그라데이션 */
+  --gradient-primary: linear-gradient(135deg, #e50914 0%, #ff6b6b 100%);
+  --gradient-card: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+
+  /* 그림자 (카드형 UI용) */
+  --shadow-small: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-large: 0 8px 32px rgba(0, 0, 0, 0.5);
+
+  /* 둥근 모서리 */
+  --radius-small: 8px;
+  --radius-medium: 12px;
+  --radius-large: 16px;
+  --radius-xl: 24px;
+
+  /* 간격 */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+
+  /* 폰트 크기 */
+  --font-size-sm: 14px;
+  --font-size-base: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 20px;
+  --font-size-2xl: 24px;
+  --font-size-3xl: 32px;
+
+  /* 전환 효과 */
+  --transition-fast: 0.15s ease-in-out;
+  --transition-normal: 0.3s ease-in-out;
+  --transition-slow: 0.5s ease-in-out;
+}

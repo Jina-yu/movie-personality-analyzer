@@ -1,9 +1,0 @@
-# requirements.txt
-django==4.2.0
-djangorestframework==3.14.0
-pandas==2.0.0
-numpy==1.24.0
-scikit-learn==1.2.0
-redis==4.5.0
-spacy==3.5.0
-textstat==0.7.0
